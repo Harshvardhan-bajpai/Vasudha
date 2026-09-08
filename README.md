@@ -146,7 +146,7 @@ Vasudha/
 ## ⚙️ Installation & Setup
 
 ### 1. Clone Repository
-git clone https://github.com/Harshvardhan-bajpai/DHARA-VAIDYA.git
+git clone https://github.com/Harshvardhan-bajpai/Vasudha.git
 
 cd Vasudha
 
