@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>DHARA VAIDYA Control Panel</title>
+
+<style>
+
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+margin:0;
+}
+
+.nav{
+padding:12px 20px;
+background:#020617;
+font-size:22px;
+color:#60a5fa;
+}
+
+.grid{
+display:grid;
+grid-template-columns:3fr 1fr;
+gap:20px;
+padding:20px;
+}
+
+.video{
+background:black;
+height:420px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.log{
+background:#020617;
+padding:10px;
+height:420px;
+overflow:auto;
+font-family:monospace;
+}
+
+.controls{
+display:grid;
+grid-template-columns:2fr 1fr 1fr;
+gap:20px;
+padding:20px;
+}
+
+.panel{
+background:#020617;
+padding:15px;
+}
+
+.btn{
+background:#111827;
+color:white;
+border:1px solid #374151;
+padding:10px;
+cursor:pointer;
+}
+
+.btn:hover{
+background:#1f2937;
+}
+
+.ctrl-grid{
+display:grid;
+grid-template-columns:60px 60px 60px;
+grid-template-rows:60px 60px 60px;
+gap:5px;
+justify-content:center;
+}
+
+.servo-grid{
+display:grid;
+grid-template-columns:40px 1fr;
+gap:10px;
+align-items:center;
+}
+
+input[type="number"],input[type="text"]{
+width:100%;
+padding:6px;
+margin-top:3px;
+background:#111827;
+color:white;
+border:1px solid #374151;
+}
+
+input[type="file"]{
+margin-top:10px;
+}
+
+.modal{
+display:none;
+position:fixed;
+z-index:1;
+left:0;
+top:0;
+width:100%;
+height:100%;
+background-color:rgba(0,0,0,0.8);
+}
+
+.modal-content{
+background-color:#0f172a;
+margin:5% auto;
+padding:20px;
+border:1px solid #60a5fa;
+width:90%;
+max-width:600px;
+border-radius:5px;
+}
+
+.modal-content{
+max-height:80vh;
+overflow-y:auto;
+}
+
+#resultBody{
+max-height:50vh;
+overflow-y:auto;
+}
+
+.modal-header{
+font-size:24px;
+font-weight:bold;
+margin-bottom:20px;
+color:#60a5fa;
+}
+
+.modal-footer{
+display:flex;
+gap:10px;
+justify-content:flex-end;
+margin-top:20px;
+}
+
+.modal-btn{
+background:#111827;
+color:white;
+border:1px solid #374151;
+padding:10px 20px;
+cursor:pointer;
+}
+
+.modal-btn.confirm{
+background:#059669;
+}
+
+.modal-btn.cancel{
+background:#dc2626;
+}
+
+.prediction-result{
+background:#111827;
+padding:15px;
+margin:10px 0;
+border-left:4px solid #60a5fa;
+}
+
+.switch{
+position:relative;
+display:inline-block;
+width:40px;
+height:22px;
+}
+
+.switch input{display:none;}
+
+.slider{
+position:absolute;
+cursor:pointer;
+background:red;
+top:0;left:0;right:0;bottom:0;
+border-radius:20px;
+}
+
+.slider:before{
+content:"";
+position:absolute;
+height:16px;width:16px;
+left:3px;bottom:3px;
+background:white;
+border-radius:50%;
+}
+
+input:checked + .slider{
+background:green;
+}
+
+input:checked + .slider:before{
+transform:translateX(18px);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="nav">DHARA VAIDYA CONTROL PANEL</div>
+
+<div class="grid">
+
+<div class="video">
+<img src="/video/rover_feed" width="100%" height="100%">
+</div>
+
+<div class="log" id="log">
+System ready
+</div>
+
+</div>
+
+<div class="controls">
+
+<!-- ROVER CONTROL -->
+
+<div class="panel">
+
+<h3>ROVER CONTROL</h3>
+
+<div class="ctrl-grid">
+
+<div></div>
+<button class="btn" onclick="move('w')">W</button>
+<div></div>
+
+<button class="btn" onclick="move('a')">A</button>
+<button class="btn" onclick="stop()">■</button>
+<button class="btn" onclick="move('d')">D</button>
+
+<div></div>
+<button class="btn" onclick="move('s')">S</button>
+<div></div>
+
+</div>
+
+<p style="font-size:12px;color:#94a3b8;">
+Keyboard: W A S D to drive
+</p>
+
+<div style="margin-top:15px">
+
+<label>Speed</label>
+
+<input
+type="range"
+min="0"
+max="99"
+value="50"
+id="speedSlider"
+oninput="updateSpeed(this.value)"
+style="width:100%"
+>
+
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;">
+<span>0</span>
+<span id="speedValue">50</span>
+<span>99</span>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ARM CONTROL -->
+
+<div class="panel">
+
+<h3>ARM CONTROL</h3>
+
+<div class="servo-grid">
+
+<label>S1</label>
+<input type="range" min="0" max="180" value="90" oninput="servo(1,this.value)">
+
+<label>S2</label>
+<input type="range" min="0" max="180" value="90" oninput="servo(2,this.value)">
+
+<label>S3</label>
+<input type="range" min="0" max="180" value="90" oninput="servo(3,this.value)">
+
+<label>S4</label>
+<input type="range" min="0" max="180" value="90" oninput="servo(4,this.value)">
+
+<label>S5</label>
+<input type="range" min="0" max="180" value="90" oninput="servo(5,this.value)">
+
+</div>
+
+</div>
+
+
+<!-- AI PANEL -->
+
+<div class="panel">
+
+<h3>AI PREDICTION</h3>
+
+<label>Crop Name</label>
+<input id="cropName" type="text">
+
+<label>Temperature</label>
+<input id="temp" type="number">
+
+<label>UV Index</label>
+<input id="uv" type="number">
+
+<label>Humidity</label>
+<input id="humidity" type="number">
+
+<label>Nitrogen</label>
+<input id="nitrogen" type="number">
+
+<label>Phosphorous</label>
+<input id="phosphorous" type="number">
+
+<label>Potassium</label>
+<input id="potassium" type="number">
+
+<br><br>
+
+<label>Plant Detection</label>
+
+<label class="switch">
+<input type="checkbox" id="plantToggle">
+<span class="slider"></span>
+</label>
+
+<!-- ADDED: status box below toggle -->
+<div id="detectionStatus" style="margin-top:8px;font-size:12px;padding:5px 10px;background:#111827;border-left:3px solid #374151;">
+Status: <span id="statusText" style="font-family:monospace;">IDLE</span>
+</div>
+
+<br>
+
+<input type="file" id="images" multiple>
+
+<button class="btn" onclick="upload()">Run Prediction</button>
+
+</div>
+
+</div>
+
+
+<!-- CONFIRM MODAL -->
+
+<div id="confirmModal" class="modal">
+
+<div class="modal-content">
+
+<div class="modal-header">Crop Name Mismatch</div>
+
+<p id="confirmMessage"></p>
+
+<div class="modal-footer">
+
+<button class="modal-btn cancel" onclick="cancelPrediction()">Cancel</button>
+
+<button class="modal-btn confirm" onclick="proceedPrediction()">Confirm</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- RESULT MODAL -->
+
+<div id="resultModal" class="modal">
+
+<div class="modal-content">
+
+<div class="modal-header">Prediction Result</div>
+
+<div id="resultBody"></div>
+
+<div class="modal-footer">
+
+<button class="modal-btn" onclick="closeResult()">Close</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+let continueToken=null
+let keyState={}
+let speedPercent=50
+let motorSpeed=72
+
+
+function log(msg){
+
+let box=document.getElementById("log")
+
+box.innerHTML="[ "+new Date().toLocaleTimeString()+" ] "+msg+"<br>"+box.innerHTML
+
+}
+
+
+function updateSpeed(val){
+
+speedPercent=parseInt(val)
+
+document.getElementById("speedValue").innerText=speedPercent
+
+motorSpeed=Math.round(45+(speedPercent/100)*55)
+
+}
+
+
+function move(cmd){
+
+let finalCmd=cmd+motorSpeed
+
+fetch("/api/rover/command",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({command:finalCmd})
+})
+
+if(cmd==="w") log("Forward "+motorSpeed+"%")
+if(cmd==="s") log("Reverse "+motorSpeed+"%")
+if(cmd==="a") log("Left "+motorSpeed+"%")
+if(cmd==="d") log("Right "+motorSpeed+"%")
+
+}
+
+
+function stop(){
+
+fetch("/api/rover/command",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({command:"stop"})
+})
+
+log("Stop")
+
+}
+
+
+function servo(id,val){
+
+fetch("/api/servo",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({servo:id,angle:val})
+})
+
+log("Servo S"+id+" → "+val)
+
+}
+
+
+document.getElementById("plantToggle").addEventListener("change",async function(){
+
+let state=this.checked
+
+await fetch("/api/plant_detection",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({state:state})
+})
+
+log("Plant detection "+state)
+
+})
+
+
+// Single unified keyboard handler — checks focus before acting
+function isTyping(){
+let tag=document.activeElement.tagName.toLowerCase()
+let type=document.activeElement.type||""
+return tag==="input"||tag==="textarea"||tag==="select"
+}
+
+document.addEventListener("keydown",function(e){
+
+// If the user is typing in any input, never intercept
+if(isTyping()) return
+
+let key=e.key.toLowerCase()
+
+if(["w","a","s","d"].includes(key)){
+e.preventDefault()
+}
+
+if(keyState[key]) return
+
+keyState[key]=true
+
+if(key==="w") move("w")
+if(key==="a") move("a")
+if(key==="s") move("s")
+if(key==="d") move("d")
+
+})
+
+document.addEventListener("keyup",function(e){
+
+// If the user is typing in any input, never intercept
+if(isTyping()) return
+
+let key=e.key.toLowerCase()
+
+keyState[key]=false
+
+if(["w","a","s","d"].includes(key)){
+stop()
+}
+
+})
+
+
+async function upload(){
+
+let files=document.getElementById("images").files
+
+if(files.length==0){
+alert("Select images")
+return
+}
+
+let form=new FormData()
+
+for(let f of files){
+form.append("images",f)
+}
+
+let uploadRes=await fetch("/upload_images",{method:"POST",body:form})
+
+let uploadData=await uploadRes.json()
+
+let data={
+
+name:document.getElementById("cropName").value,
+
+temp:document.getElementById("temp").value,
+uv_index:document.getElementById("uv").value,
+humidity:document.getElementById("humidity").value,
+nitrogen:document.getElementById("nitrogen").value,
+phosphorous:document.getElementById("phosphorous").value,
+potassium:document.getElementById("potassium").value,
+
+photos:uploadData.photos
+
+}
+
+let res=await fetch("/predict",{
+
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(data)
+
+})
+
+let r=await res.json()
+
+if(r.status=="warning"){
+
+continueToken=r.continue_token
+
+document.getElementById("confirmMessage").innerText=r.message
+
+document.getElementById("confirmModal").style.display="block"
+
+}
+
+else{
+
+showResult(r)
+
+}
+
+}
+
+
+async function proceedPrediction(){
+
+document.getElementById("confirmModal").style.display="none"
+
+let res=await fetch("/confirm",{
+
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+token:continueToken,
+confirm:true
+})
+
+})
+
+let r=await res.json()
+
+showResult(r)
+
+}
+
+
+async function cancelPrediction(){
+
+document.getElementById("confirmModal").style.display="none"
+
+await fetch("/confirm",{
+
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+token:continueToken,
+confirm:false
+})
+
+})
+
+log("Prediction cancelled")
+
+}
+
+
+function showResult(data){
+
+let html=""
+
+html+="<div class='prediction-result'><b>"+data.prediction+"</b></div>"
+
+if(data.images){
+
+for(let img of data.images){
+
+html+="<div class='prediction-result'>"+img.image+" : "+img.prediction+" ("+img.confidence+")</div>"
+
+}
+
+}
+
+document.getElementById("resultBody").innerHTML=html
+
+document.getElementById("resultModal").style.display="block"
+
+}
+
+
+function closeResult(){
+
+document.getElementById("resultModal").style.display="none"
+
+}
+
+
+// Fetch logs from backend and update dashboard
+async function updateLogs(){
+
+let res=await fetch("/api/logs")
+let data=await res.json()
+
+let logBox=document.getElementById("log")
+logBox.innerHTML=""
+
+for(let msg of data.logs){
+logBox.innerHTML=msg+"<br>"+logBox.innerHTML
+}
+
+}
+
+setInterval(updateLogs, 5000)
+
+
+// ADDED: poll detection status every 2 seconds
+
+const STATUS_COLORS={
+idle:"#94a3b8",
+searching:"#60a5fa",
+detected:"#facc15",
+capturing:"#f97316",
+complete:"#22c55e",
+incomplete:"#ef4444"
+}
+
+async function pollDetectionStatus(){
+try{
+let res=await fetch("/api/plant_detection/status")
+let data=await res.json()
+let s=data.status||"idle"
+let el=document.getElementById("statusText")
+let box=document.getElementById("detectionStatus")
+el.innerText=s.toUpperCase()
+el.style.color=STATUS_COLORS[s]||"#94a3b8"
+box.style.borderLeftColor=STATUS_COLORS[s]||"#374151"
+document.getElementById("plantToggle").checked=data.enabled
+}catch(e){}
+}
+
+setInterval(pollDetectionStatus,2000)
+
+</script>
+
+</body>
+</html>

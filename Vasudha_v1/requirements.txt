@@ -1,0 +1,11 @@
+# Varah Rover Python Requirements
+
+flask
+pyserial
+opencv-python
+numpy
+pillow
+requests
+ultralytics>=8.0.0
+torch
+torchvision
